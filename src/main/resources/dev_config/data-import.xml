@@ -1,0 +1,21 @@
+<dataConfig>
+    <dataSource type="JdbcDataSource"
+                driver="com.mysql.jdbc.Driver"
+                url="jdbc:mysql://182.92.214.77:3306/youxue"
+                user="youxue"
+                password="youxue"/>
+    <document>
+        <entity name="tour_line" pk="id"
+                query="select id,org_id,title,travel,description,feature,main_img from tour_line where delete_flag = 0 and status = 1">
+            <entity name="travel_city"
+                    query="select co.id as travel_country_id, co.en_name as travel_country_en_name,co.cn_name as travel_country_cn_name,ci.id as travel_city_id, ci.en_name as travel_city_en_name,ci.cn_name as travel_city_cn_name from tour_line_city tl, city ci,country co where tl.tour_line_id = ${tour_line.id} and tl.city_id = ci.id and ci.country_id = co.id"></entity>
+            <entity name="start_city"
+                    query="select ci.id as start_city_id,ci.cn_name as start_city_cn_name,ci.en_name as start_city_en_name from tour_group tg, city ci where tg.tour_line_id = ${tour_line.id} and tg.delete_flag = 0  and tg.start_city = ci.id group by ci.id"></entity>
+            <entity name="group_info"
+                    query="select min(price)/100 as min_price,max(price)/100 as max_price,sum(max_limit) as total_person_limit, min(start_time) as min_start_date, max(start_time) as max_start_date from tour_group where tour_line_id = ${tour_line.id} group by tour_line_id"></entity>
+            <entity name="tag"
+                    query="SELECT tlrt.product_tag_id AS tag_id,t.name AS tag_name, tlrt.tag_category_code FROM tour_line_rel_tag tlrt, product_tag t WHERE tlrt.`product_tag_id`=t.`id` AND tlrt.tour_line_id = ${tour_line.id}">
+            </entity>
+        </entity>
+    </document>
+</dataConfig>

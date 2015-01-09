@@ -1,0 +1,8 @@
+.idea/
+.metadata
+*.iml
+*.class
+*.jar
+.DS_Store
+proto/gen-*
+target

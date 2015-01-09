@@ -1,0 +1,72 @@
+<dataConfig>
+    <dataSource name="haoxue" type="JdbcDataSource"
+                driver="com.mysql.jdbc.Driver"
+                url="jdbc:mysql://rdsvryj7beqrjjm.mysql.rds.aliyuncs.com:3306/haoxue"
+                user="haoxue"
+                password="haoxue"/>
+    <script>
+        <![CDATA[
+
+            function extractArrayData(field,row){
+                if(row.get(field) == null || row.get(field) == '') {
+                    row.put(field, new java.util.ArrayList());
+                    return;
+                }
+                var pieces = eval("(" + row.get(field) + ")");
+                var arr = new java.util.ArrayList();
+                for (var i=0; i<pieces.length; i++) {
+                   if(pieces[i]!=''){
+                     arr.add(pieces[i]);
+                   }
+                }
+                row.put(field, arr);
+            }
+
+            function extractTeacher(field, row){
+                if(row.get(field) == null || row.get(field) == '') {
+                    row.put(field, new java.util.ArrayList());
+                    return;
+                }
+                var pieces = eval("(" + row.get(field) + ")");
+                var arr = new java.util.ArrayList();
+                var te = new java.util.ArrayList();
+                for (var i=0; i<pieces.length; i++) {
+                   if(pieces[i] != null && pieces[i]!=''){
+                     arr.add(pieces[i]['id']);
+                     te.add(pieces[i]['id'] + "_" + pieces[i]['name'])
+                   }
+                }
+                row.put("teacher_id", arr);
+                row.put("teacher", te);
+            }
+
+            function extractLiveClass(field, row){
+                if(row.get(field) == null || row.get(field) == '') {
+                    row.put(field, new java.util.ArrayList());
+                    return;
+                }
+                var pieces = eval("(" + row.get(field) + ")");
+                var arr = new java.util.ArrayList();
+                for (var i=0; i<pieces.length; i++) {
+                   if(pieces[i] != null && pieces[i]!=''){
+                     arr.add(pieces[i]['subject'] + ":" + pieces[i]['start_time'] + "~" + pieces[i]['end_time'])
+                   }
+                }
+                row.put(field, arr);
+            }
+
+            function p_trans(row) {
+                extractArrayData('class_table',row);
+                extractTeacher('teacher',row);
+                extractLiveClass('live_class',row);
+                return row;
+            }
+        ]]>
+    </script>
+    <document>
+        <entity transformer="script:p_trans" dataSource="haoxue" name="product" pk="id"
+                query="select *, CONCAT(province_id, '_', province_name) AS province, CONCAT(city_id, '_', city_name) AS city, CONCAT(circle_id, '_', circle_name) AS circle, CASE WHEN (class_type = 'online_video' OR class_type = 'online_live') THEN 1 ELSE person_count - signup_count END AS can_book from class_info where is_delete = 0 and stop_book_date >= DATE_FORMAT(NOW(),'%Y-%m-%d')">
+
+        </entity>
+    </document>
+</dataConfig>

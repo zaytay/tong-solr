@@ -1,0 +1,56 @@
+<dataConfig>
+    <dataSource name="haoxue" type="JdbcDataSource"
+                driver="com.mysql.jdbc.Driver"
+                url="jdbc:mysql://182.92.214.77:3306/haoxue?tinyInt1isBit=false"
+                user="haoxue"
+                password="haoxue"/>
+    <script>
+        <![CDATA[
+
+            function extractArrayDate(field,row){
+                if(row.get(field) == null || row.get(field) == '') {
+                    row.put(field, new java.util.ArrayList());
+                    return;
+                }
+                var pieces = row.get(field).split(',');
+                var arr = new java.util.ArrayList();
+                for (var i=0; i<pieces.length; i++) {
+                   if(pieces[i]!=''){
+                     arr.add(pieces[i]);
+                   }
+                }
+                row.put(field, arr);
+            }
+
+            function notEmpty(d) {
+                return d != null && d != '';
+            }
+
+            function p_trans(row) {
+                extractArrayDate('locations',row);
+                extractArrayDate('categories',row);
+                extractArrayDate('course_feature',row);
+                extractArrayDate('course_feature_name',row);
+                extractArrayDate('teach_way',row);
+                extractArrayDate('teaching_feature',row);
+                extractArrayDate('teaching_security',row);
+                extractArrayDate('person_group',row);
+                extractArrayDate('class_date',row);
+                extractArrayDate('teaching_security_code',row);
+                extractArrayDate('class_volume',row);
+                extractArrayDate('prices',row);
+                return row;
+            }
+        ]]>
+    </script>
+    <document>
+        <!--测试使用，不适用status过滤-->
+        <!--<entity transformer="script:p_trans" name="product" pk="id"-->
+                <!--query="select c.* from course_info c,product p where c.course_id = p.id and p.delete_flag = 0">-->
+        <!--测试使用，不适用status过滤-->
+        <entity transformer="script:p_trans" name="product" pk="id"
+                query="select c.*,p.id as pid from course_info c,product p where c.course_id = p.id and p.delete_flag = 0 and status = 1 and class_count > 0">
+            <entity name="c_score" query="select score as course_score from course_score where course_id = ${product.course_id}"/>
+        </entity>
+    </document>
+</dataConfig>
